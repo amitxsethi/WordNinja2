@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Target, BookOpen, Award, Timer, Star } from 'lucide-react';
+import { Play, Target, BookOpen, Award, Star } from 'lucide-react';
 import { GameType } from '../types';
 import { getRandomWords } from '../data/vocabulary';
 import GameSession from '../components/GameSession';

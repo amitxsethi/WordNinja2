@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Target, BookOpen, RefreshCw, Check, X, Star, Clock } from 'lucide-react';
+import { Target, BookOpen, RefreshCw, Check, X, Star } from 'lucide-react';
 import { vocabularyData } from '../data/vocabulary';
 import { Word } from '../types';
 

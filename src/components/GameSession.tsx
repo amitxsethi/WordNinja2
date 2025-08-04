@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { X, Check, Clock, Star, Trophy, ArrowLeft } from 'lucide-react';
 import { Word, GameType, GameResult } from '../types';
 
@@ -26,16 +26,40 @@ const GameSession: React.FC<GameSessionProps> = ({ gameType, words, onGameEnd })
   const [gameResults, setGameResults] = useState<GameResult[]>([]);
   const [showResults, setShowResults] = useState(false);
 
-  const questions = generateQuestions(words, gameType);
-
-  useEffect(() => {
-    if (timeLeft > 0 && !isAnswered) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !isAnswered) {
-      handleAnswer(null);
+  // Helper functions
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-  }, [timeLeft, isAnswered]);
+    return shuffled;
+  };
+
+  const getRandomSynonyms = (synonyms: string[], count: number): string[] => {
+    const allSynonyms = ['similar', 'alike', 'same', 'equivalent', 'comparable'];
+    return shuffleArray(allSynonyms).slice(0, count);
+  };
+
+  const getRandomAntonyms = (antonyms: string[], count: number): string[] => {
+    const allAntonyms = ['opposite', 'different', 'contrary', 'reverse', 'inverse'];
+    return shuffleArray(allAntonyms).slice(0, count);
+  };
+
+  const getRandomDefinitions = (count: number): string[] => {
+    const definitions = [
+      'A person who is very good at something',
+      'To work together with others',
+      'Having a strong desire to succeed',
+      'Being honest and truthful'
+    ];
+    return shuffleArray(definitions).slice(0, count);
+  };
+
+  const getRandomWords = (count: number): string[] => {
+    const words = ['happy', 'smart', 'brave', 'kind', 'strong'];
+    return shuffleArray(words).slice(0, count);
+  };
 
   const generateQuestions = (words: Word[], type: GameType): Question[] => {
     return words.map(word => {
@@ -82,41 +106,9 @@ const GameSession: React.FC<GameSessionProps> = ({ gameType, words, onGameEnd })
     });
   };
 
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
+  const questions = generateQuestions(words, gameType);
 
-  const getRandomSynonyms = (synonyms: string[], count: number): string[] => {
-    const allSynonyms = ['similar', 'alike', 'same', 'equivalent', 'comparable'];
-    return shuffleArray(allSynonyms).slice(0, count);
-  };
-
-  const getRandomAntonyms = (antonyms: string[], count: number): string[] => {
-    const allAntonyms = ['opposite', 'different', 'contrary', 'reverse', 'inverse'];
-    return shuffleArray(allAntonyms).slice(0, count);
-  };
-
-  const getRandomDefinitions = (count: number): string[] => {
-    const definitions = [
-      'A person who is very good at something',
-      'To work together with others',
-      'Having a strong desire to succeed',
-      'Being honest and truthful'
-    ];
-    return shuffleArray(definitions).slice(0, count);
-  };
-
-  const getRandomWords = (count: number): string[] => {
-    const words = ['happy', 'smart', 'brave', 'kind', 'strong'];
-    return shuffleArray(words).slice(0, count);
-  };
-
-  const handleAnswer = (answer: string | null) => {
+  const handleAnswer = useCallback((answer: string | null) => {
     if (isAnswered) return;
 
     const currentQuestion = questions[currentQuestionIndex];
@@ -147,7 +139,16 @@ const GameSession: React.FC<GameSessionProps> = ({ gameType, words, onGameEnd })
         setShowResults(true);
       }
     }, 2000);
-  };
+  }, [currentQuestionIndex, gameResults, isAnswered, questions, score, timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft > 0 && !isAnswered) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (timeLeft === 0 && !isAnswered) {
+      handleAnswer(null);
+    }
+  }, [timeLeft, isAnswered, handleAnswer]);
 
   const currentQuestion = questions[currentQuestionIndex];
 
