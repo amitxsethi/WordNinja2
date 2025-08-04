@@ -14,6 +14,7 @@ interface Question {
   question: string;
   correctAnswer: string;
   options: string[];
+  displayOptions: string[];
   type: 'synonym' | 'antonym' | 'definition' | 'sentence';
 }
 
@@ -38,62 +39,83 @@ const GameSession: React.FC<GameSessionProps> = ({ gameType, words, onGameEnd })
 
   const getRandomSynonyms = (synonyms: string[], count: number): string[] => {
     const allSynonyms = ['similar', 'alike', 'same', 'equivalent', 'comparable'];
-    return shuffleArray(allSynonyms).slice(0, count);
+    return shuffleArray(allSynonyms).slice(0, count).map(s => s.toLowerCase());
   };
 
   const getRandomAntonyms = (antonyms: string[], count: number): string[] => {
     const allAntonyms = ['opposite', 'different', 'contrary', 'reverse', 'inverse'];
-    return shuffleArray(allAntonyms).slice(0, count);
+    return shuffleArray(allAntonyms).slice(0, count).map(s => s.toLowerCase());
   };
 
   const getRandomDefinitions = (count: number): string[] => {
     const definitions = [
-      'A person who is very good at something',
-      'To work together with others',
-      'Having a strong desire to succeed',
-      'Being honest and truthful'
+      'a person who is very good at something',
+      'to work together with others',
+      'having a strong desire to succeed',
+      'being honest and truthful'
     ];
     return shuffleArray(definitions).slice(0, count);
   };
 
   const getRandomWords = (count: number): string[] => {
     const words = ['happy', 'smart', 'brave', 'kind', 'strong'];
-    return shuffleArray(words).slice(0, count);
+    return shuffleArray(words).slice(0, count).map(w => w.toLowerCase());
+  };
+
+  // Helper function to normalize text for consistent capitalization
+  const normalizeText = (text: string): string => {
+    return text.toLowerCase().trim();
   };
 
   const generateQuestions = (words: Word[], type: GameType): Question[] => {
     return words.map(word => {
       switch (type) {
         case 'synonym':
+          const correctSynonym = word.synonyms[0];
+          const synonymOptions = [correctSynonym, ...getRandomSynonyms(word.synonyms, 3)];
+          const shuffledSynonymOptions = shuffleArray(synonymOptions);
           return {
             word,
             question: `What is a synonym for "${word.word}"?`,
-            correctAnswer: word.synonyms[0],
-            options: shuffleArray([word.synonyms[0], ...getRandomSynonyms(word.synonyms, 3)]),
+            correctAnswer: normalizeText(correctSynonym),
+            options: shuffledSynonymOptions.map(opt => normalizeText(opt)),
+            displayOptions: shuffledSynonymOptions,
             type: 'synonym'
           };
         case 'antonym':
+          const correctAntonym = word.antonyms[0];
+          const antonymOptions = [correctAntonym, ...getRandomAntonyms(word.antonyms, 3)];
+          const shuffledAntonymOptions = shuffleArray(antonymOptions);
           return {
             word,
             question: `What is an antonym for "${word.word}"?`,
-            correctAnswer: word.antonyms[0],
-            options: shuffleArray([word.antonyms[0], ...getRandomAntonyms(word.antonyms, 3)]),
+            correctAnswer: normalizeText(correctAntonym),
+            options: shuffledAntonymOptions.map(opt => normalizeText(opt)),
+            displayOptions: shuffledAntonymOptions,
             type: 'antonym'
           };
         case 'definition':
+          const correctDefinition = word.definition;
+          const definitionOptions = [correctDefinition, ...getRandomDefinitions(3)];
+          const shuffledDefinitionOptions = shuffleArray(definitionOptions);
           return {
             word,
             question: `What does "${word.word}" mean?`,
-            correctAnswer: word.definition,
-            options: shuffleArray([word.definition, ...getRandomDefinitions(3)]),
+            correctAnswer: normalizeText(correctDefinition),
+            options: shuffledDefinitionOptions.map(opt => normalizeText(opt)),
+            displayOptions: shuffledDefinitionOptions,
             type: 'definition'
           };
         case 'sentence':
+          const correctWord = word.word;
+          const wordOptions = [correctWord, ...getRandomWords(3)];
+          const shuffledWordOptions = shuffleArray(wordOptions);
           return {
             word,
             question: `Complete the sentence: "${word.sampleSentence.replace(word.word, '_____')}"`,
-            correctAnswer: word.word,
-            options: shuffleArray([word.word, ...getRandomWords(3)]),
+            correctAnswer: normalizeText(correctWord),
+            options: shuffledWordOptions.map(opt => normalizeText(opt)),
+            displayOptions: shuffledWordOptions,
             type: 'sentence'
           };
         case 'mixed':
@@ -112,7 +134,8 @@ const GameSession: React.FC<GameSessionProps> = ({ gameType, words, onGameEnd })
     if (isAnswered) return;
 
     const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = answer === currentQuestion.correctAnswer;
+    const normalizedAnswer = answer ? normalizeText(answer) : null;
+    const isCorrect = normalizedAnswer === currentQuestion.correctAnswer;
     
     if (isCorrect) {
       setScore(score + 10);
@@ -261,7 +284,7 @@ const GameSession: React.FC<GameSessionProps> = ({ gameType, words, onGameEnd })
         </h2>
         
         <div className="grid gap-4">
-          {currentQuestion.options.map((option, index) => (
+          {currentQuestion.displayOptions.map((option, index) => (
             <motion.button
               key={index}
               whileHover={{ scale: 1.02 }}
@@ -270,22 +293,22 @@ const GameSession: React.FC<GameSessionProps> = ({ gameType, words, onGameEnd })
               disabled={isAnswered}
               className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                 isAnswered
-                  ? option === currentQuestion.correctAnswer
+                  ? normalizeText(option) === currentQuestion.correctAnswer
                     ? 'border-green-500 bg-green-50 text-green-800'
-                    : option === selectedAnswer
+                    : normalizeText(option) === normalizeText(selectedAnswer || '')
                     ? 'border-red-500 bg-red-50 text-red-800'
                     : 'border-gray-200 bg-gray-50 text-gray-600'
-                  : selectedAnswer === option
+                  : normalizeText(option) === normalizeText(selectedAnswer || '')
                   ? 'border-primary-500 bg-primary-50 text-primary-800'
                   : 'border-gray-200 hover:border-primary-300 hover:bg-primary-50'
               }`}
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium">{option}</span>
-                {isAnswered && option === currentQuestion.correctAnswer && (
+                {isAnswered && normalizeText(option) === currentQuestion.correctAnswer && (
                   <Check className="w-5 h-5 text-green-600" />
                 )}
-                {isAnswered && option === selectedAnswer && option !== currentQuestion.correctAnswer && (
+                {isAnswered && normalizeText(option) === normalizeText(selectedAnswer || '') && normalizeText(option) !== currentQuestion.correctAnswer && (
                   <X className="w-5 h-5 text-red-600" />
                 )}
               </div>
