@@ -38,28 +38,28 @@ const GameSession: React.FC<GameSessionProps> = ({ gameType, words, onGameEnd })
   };
 
   const getRandomSynonyms = (synonyms: string[], count: number): string[] => {
-    const allSynonyms = ['similar', 'alike', 'same', 'equivalent', 'comparable'];
-    return shuffleArray(allSynonyms).slice(0, count).map(s => s.toLowerCase());
+    const allSynonyms = ['Similar', 'Alike', 'Same', 'Equivalent', 'Comparable'];
+    return shuffleArray(allSynonyms).slice(0, count);
   };
 
   const getRandomAntonyms = (antonyms: string[], count: number): string[] => {
-    const allAntonyms = ['opposite', 'different', 'contrary', 'reverse', 'inverse'];
-    return shuffleArray(allAntonyms).slice(0, count).map(s => s.toLowerCase());
+    const allAntonyms = ['Opposite', 'Different', 'Contrary', 'Reverse', 'Inverse'];
+    return shuffleArray(allAntonyms).slice(0, count);
   };
 
   const getRandomDefinitions = (count: number): string[] => {
     const definitions = [
-      'a person who is very good at something',
-      'to work together with others',
-      'having a strong desire to succeed',
-      'being honest and truthful'
+      'A person who is very good at something',
+      'To work together with others',
+      'Having a strong desire to succeed',
+      'Being honest and truthful'
     ];
     return shuffleArray(definitions).slice(0, count);
   };
 
   const getRandomWords = (count: number): string[] => {
-    const words = ['happy', 'smart', 'brave', 'kind', 'strong'];
-    return shuffleArray(words).slice(0, count).map(w => w.toLowerCase());
+    const words = ['Happy', 'Smart', 'Brave', 'Kind', 'Strong'];
+    return shuffleArray(words).slice(0, count);
   };
 
   // Helper function to normalize text for consistent capitalization
