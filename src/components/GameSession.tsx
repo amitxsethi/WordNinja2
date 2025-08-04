@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { X, Check, Clock, Star, Trophy, ArrowLeft } from 'lucide-react';
-import { Word, GameType, GameResult } from '../types';
+import { ArrowLeft, Star, Clock, Check, X, Trophy } from 'lucide-react';
+import { Word, GameResult, GameType } from '../types';
 
 interface GameSessionProps {
   gameType: GameType;
@@ -128,7 +128,7 @@ const GameSession: React.FC<GameSessionProps> = ({ gameType, words, onGameEnd })
     });
   };
 
-  const questions = generateQuestions(words, gameType);
+  const questions = useMemo(() => generateQuestions(words, gameType), [words, gameType]);
 
   const handleAnswer = useCallback((answer: string | null) => {
     if (isAnswered) return;

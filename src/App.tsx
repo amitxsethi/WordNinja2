@@ -10,7 +10,7 @@ import Practice from './pages/Practice';
 import './index.css';
 
 // Version tracking - update this for each deployment
-const APP_VERSION = '1.0.2';
+const APP_VERSION = '1.0.3';
 
 function App() {
   return (
